@@ -36,17 +36,14 @@ function changeColor(rect, newColor) {
 
 function onRectangleClicked(rect) {
     changeColor(rect, 0xce6397);
-    d002.game.scale.startFullScreen(false);
 };
 
 function onRectangleUnclicked(rect) {
     changeColor(rect, 0x5cb297);
-    d002.game.scale.stopFullScreen();
 };
 
 function create() {
     d002.game.stage.backgroundColor = '#5a98fc';
-    d002.game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
 
     // Add two additional multitouch possibility (2 + 2)
     d002.game.input.addPointer();
