@@ -45,6 +45,11 @@ function onRectangleUnclicked(rect) {
 function create() {
     d002.game.stage.backgroundColor = '#5a98fc';
 
+    // Add two additional multitouch possibility (2 + 2)
+    d002.game.input.addPointer();
+    d002.game.input.addPointer();
+
+
     d002.rects = {};
     d002.rects[0] = newRectangle(d002.MARGIN, d002.MARGIN);
     d002.rects[1] = newRectangle(3 * d002.MARGIN + d002.BOX_SIZE, d002.MARGIN);
