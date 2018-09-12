@@ -1,8 +1,11 @@
 
 var d = {}
+var MODE_AUTO = 0;
+var MODE_PLAY = 1;
 d.WORLD_SIZE = 400;
 d.MARGIN = 20;
 d.BOX_SIZE = (d.WORLD_SIZE / 2) - (2 * d.MARGIN);
+d.MODE = MODE_AUTO;
 
 d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.AUTO, 'd003',
 {
@@ -27,7 +30,11 @@ function newRectangle(x, y, fx) {
     rect.input.useHandCursor = true;
     rect.events.onInputDown.add(onRectangleClicked, this);
     rect.events.onInputUp.add(onRectangleUnclicked, this);
+
     rect.fx = fx;
+
+    // rect.timer = d.game.time.create(false);
+    // rect.timer.loop(100, () => onRectangleUnclicked(rect), this);
     return rect;
 };
 
@@ -37,7 +44,6 @@ function changeColor(rect, newColor) {
     rect.clear();
     rect.beginFill(newColor, 1);
     rect.drawRect(x, y, d.BOX_SIZE, d.BOX_SIZE);
-
 };
 
 function onRectangleClicked(rect) {
@@ -47,6 +53,7 @@ function onRectangleClicked(rect) {
 
 function onRectangleUnclicked(rect) {
     changeColor(rect, 0x9a9da0);
+    // rect.timer.stop();
 };
 
 function create() {
@@ -67,12 +74,35 @@ function create() {
     d.rects[1] = newRectangle(3 * d.MARGIN + d.BOX_SIZE, d.MARGIN, d.snare);
     d.rects[2] = newRectangle(d.MARGIN, 3 * d.MARGIN + d.BOX_SIZE, d.hat);
     d.rects[3] = newRectangle(3 * d.MARGIN + d.BOX_SIZE, 3 * d.MARGIN + d.BOX_SIZE, d.crash);
+    d.rects[0].partition = "x-x-----x-------";
+    d.rects[1].partition = "----x-------xxxx";
+    d.rects[2].partition = "x-x-x-x-x-x-x-x-";
+    d.rects[3].partition = "x---------------";
+
+    d.tick_timer = d.game.time.create(false);
+    d.tick_timer.loop(200, tick, this);
+    if (d.MODE == MODE_AUTO) { d.tick_timer.start(); }
+    d.tick_timer.tick_increment = 0;
 };
+
+function tick() {
+    if (d.MODE == MODE_PLAY) { d.tick_timer.stop(); return; }
+
+    for (var i = 0; i < 4; i++) {
+        onRectangleUnclicked(d.rects[i]);
+        if (d.rects[i].partition[d.tick_timer.tick_increment % d.rects[i].partition.length] == "x") {
+            onRectangleClicked(d.rects[i]);
+            // d.rects[i].timer.loop(100, () => onRectangleUnclicked(d.rects[i]), this);
+            // d.rects[i].timer.start();
+        }
+    }
+
+    d.tick_timer.tick_increment++;
+}
 
 function sound_decoded() {
     console.log("Sound decoded");
 }
-
 
 function update() {};
 
