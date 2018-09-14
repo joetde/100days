@@ -7,8 +7,6 @@ d.MARGIN = 20;
 d.BOX_SIZE = (d.WORLD_SIZE / 2) - (2 * d.MARGIN);
 d.MODE = MODE_AUTO;
 
-var i = 0;
-
 d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.AUTO, 'd005',
 {
     preload: preload,
@@ -34,22 +32,28 @@ function create() {
     d.plot_point = new Phaser.Point();
 };
 
-function onInput() {
-    for (var a = 0; a < 10; a++) {
-        var x = d.game.input.activePointer.x;
-        var y = d.game.input.activePointer.y;
+function draw(pointer) {
+    for (var a = 0; a < 50; a++) {
+        var x = pointer.x;
+        var y = pointer.y;
         circle = new Phaser.Circle(x, y, 20);
         circle.random(d.plot_point);
         d.plot_point.floor();
         
-        i = d.game.math.wrapValue(i, 1, 359);
-        d.bmd.setPixel(d.plot_point.x, d.plot_point.y, d.colors[i].r, d.colors[i].g, d.colors[i].b);
+        var idx = Math.floor(d.game.math.random(359));
+        d.bmd.setPixel(d.plot_point.x, d.plot_point.y, d.colors[idx].r, d.colors[idx].g, d.colors[idx].b);
     }
 }
 
 function update() {
-    if (d.game.input.activePointer.isDown) {
-        onInput();
+    d.game.input.pointers.forEach(function (pointer) {
+        if (pointer.isDown) {
+            draw(pointer);
+        }
+    });
+
+    if (d.game.input.mousePointer.isDown) {
+        draw(d.game.input.mousePointer);
     }
 };
 
