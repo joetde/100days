@@ -2,8 +2,10 @@
 // Note: to get image => d.game.canvas.toDataURL()
 
 var d = {}
-d.WORLD_SIZE = 400;
+d.WORLD_SIZE = 600;
 d.COLOR_WHEEL_MAX = 359;
+loading = true;
+y_idx = 0;
 
 d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.CANVAS, 'd007',
 {
@@ -16,12 +18,14 @@ d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.CANVAS, 'd007',
 function preload() {}
 
 function create() {
-    d.game.stage.backgroundColor = '#545659';
+    // d.game.stage.backgroundColor = '#545659';
     d.colors = Phaser.Color.HSVColorWheel();
 
     // For ploting
     d.bmd = d.game.add.bitmapData(d.game.width, d.game.height);
+    d.bmd.fill(0, 0, 0, 1);
     d.bmd.addToWorld();
+
     d.rect = new Phaser.Rectangle(0, 0, d.game.width, d.game.height);
 
     d.plot_points = [
@@ -34,13 +38,26 @@ function create() {
         new Phaser.Point(d.game.world.centerX, d.game.world.centerY)
     ];
 
-    d.plot_points[0].custom_color = d.colors[50];
-    d.plot_points[1].custom_color = d.colors[100];
-    d.plot_points[2].custom_color = d.colors[150];
-    d.plot_points[3].custom_color = d.colors[200];
-    d.plot_points[4].custom_color = d.colors[250];
-    d.plot_points[5].custom_color = d.colors[300];
-    d.plot_points[6].custom_color = d.colors[350];
+    d.plot_points[0].custom_color = 50;
+    d.plot_points[1].custom_color = 100;
+    d.plot_points[2].custom_color = 150;
+    d.plot_points[3].custom_color = 200;
+    d.plot_points[4].custom_color = 250;
+    d.plot_points[5].custom_color = 300;
+    d.plot_points[6].custom_color = 350;
+
+    d.grid = new Array(d.game.width+1);
+    for (var i=0; i<d.game.width+1; i++) {
+        d.grid[i] = new Array(d.game.height+1);
+        for (var j=0; j<d.game.height+1; j++) {
+            d.grid[i][j] = 200;
+            // d.bmd.setPixel(i, j, 0, 0, 0);
+        }
+    }
+
+    d.timer = d.game.time.create(false);
+    d.timer.loop(100, updateAll, this);
+    d.timer.start();
 
     document.getElementById('save').onclick = function() {
         location.href=get_image();
@@ -52,9 +69,41 @@ function rand_btw(a, b) {
 }
 
 function update() {
-    for (var i=0; i<100; i++) {
+    if (y_idx < d.game.height) {
+        for (var i=0; i<d.game.width; i++) {
+            d.bmd.setPixel(i, y_idx, d.colors[200].r, d.colors[200].g, d.colors[200].b);
+        }
+        y_idx++;
+        return;
+    }
+
+    for (var i=0; i<10000; i++) {
         d.plot_points.forEach(p => update_position(p));
     }
+
+    // d.bmd.fill(0, 0, 0, 0.05);
+    // d.bmd.update();
+};
+
+function updateAll() {
+    if (y_idx < d.game.height) { return; }
+    console.log("updateAll");
+    d.bmd.processPixelRGB(forEachPixel, this);
+};
+
+function forEachPixel(pixel, x, y) {
+    // console.log(pixel);
+    // console.log(x);
+    // console.log(y);
+    var color = d.colors[d.grid[x][y]];
+
+    pixel.r = color.r;
+    pixel.g = color.g;
+    pixel.b = color.b;
+
+    // d.bmd.setPixel(x, y, pixel.r, pixel.g, pixel.b);
+
+    return pixel;
 };
 
 function update_position(p) {
@@ -71,7 +120,9 @@ function update_position(p) {
 
     check_point_in_box(p);
 
-    d.bmd.setPixel(p.x, p.y, p.custom_color.r, p.custom_color.g, p.custom_color.b);
+    // var c_idx = Math.min(p.custom_color + rand_btw(-50, 50), d.COLOR_WHEEL_MAX);
+    d.grid[p.x][p.y] = p.custom_color;
+    // d.bmd.setPixel(p.x, p.y, d.colors[c_idx].r, d.colors[c_idx].g, d.colors[c_idx].b);
 }
 
 function check_point_in_box(p) {
