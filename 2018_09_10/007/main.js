@@ -2,10 +2,8 @@
 // Note: to get image => d.game.canvas.toDataURL()
 
 var d = {}
-d.WORLD_SIZE = 600;
+d.WORLD_SIZE = 1000;
 d.COLOR_WHEEL_MAX = 359;
-loading = true;
-y_idx = 0;
 
 d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.CANVAS, 'd007',
 {
@@ -15,7 +13,9 @@ d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.CANVAS, 'd007',
     render: render
 });
 
-function preload() {}
+function preload() {
+    d.game.load.image('background', 'black.png');
+}
 
 function create() {
     // d.game.stage.backgroundColor = '#545659';
@@ -23,7 +23,7 @@ function create() {
 
     // For ploting
     d.bmd = d.game.add.bitmapData(d.game.width, d.game.height);
-    d.bmd.fill(0, 0, 0, 1);
+    d.bmd.load('background');
     d.bmd.addToWorld();
 
     d.rect = new Phaser.Rectangle(0, 0, d.game.width, d.game.height);
@@ -51,7 +51,6 @@ function create() {
         d.grid[i] = new Array(d.game.height+1);
         for (var j=0; j<d.game.height+1; j++) {
             d.grid[i][j] = 200;
-            // d.bmd.setPixel(i, j, 0, 0, 0);
         }
     }
 
@@ -69,39 +68,21 @@ function rand_btw(a, b) {
 }
 
 function update() {
-    if (y_idx < d.game.height) {
-        for (var i=0; i<d.game.width; i++) {
-            d.bmd.setPixel(i, y_idx, d.colors[200].r, d.colors[200].g, d.colors[200].b);
-        }
-        y_idx++;
-        return;
-    }
-
-    for (var i=0; i<10000; i++) {
+    for (var i=0; i<100000; i++) {
         d.plot_points.forEach(p => update_position(p));
     }
-
-    // d.bmd.fill(0, 0, 0, 0.05);
-    // d.bmd.update();
 };
 
 function updateAll() {
-    if (y_idx < d.game.height) { return; }
-    console.log("updateAll");
-    d.bmd.processPixelRGB(forEachPixel, this);
+    d.bmd.processPixelRGB(forEachPixel, this, 0, 0, d.game.width, d.game.height);
 };
 
 function forEachPixel(pixel, x, y) {
-    // console.log(pixel);
-    // console.log(x);
-    // console.log(y);
     var color = d.colors[d.grid[x][y]];
 
     pixel.r = color.r;
     pixel.g = color.g;
     pixel.b = color.b;
-
-    // d.bmd.setPixel(x, y, pixel.r, pixel.g, pixel.b);
 
     return pixel;
 };
