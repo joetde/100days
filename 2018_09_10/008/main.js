@@ -16,6 +16,7 @@ d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.CANVAS, 'd008',
 });
 
 function preload() {
+    d.game.load.path = "../assets/";
     d.game.load.image('img', 'image.jpg');
 }
 
