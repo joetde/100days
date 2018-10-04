@@ -2,10 +2,20 @@
 // Note: to get image => d.game.canvas.toDataURL()
 
 var d = {}
-d.WORLD_SIZE = 1000;
+d.WORLD_SIZE = 600;
 d.COLOR_WHEEL_MAX = 359;
 
-d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.CANVAS, 'd007',
+d.PRESENT = 100;
+d.ABSENT = 270;
+
+d.ROOT = {parent: undefined};
+
+d.UP = 0;
+d.RIGHT = 1;
+d.DOWN = 2;
+d.LEFT = 3;
+
+d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.CANVAS, 'd013',
 {
     preload: preload,
     create: create,
@@ -19,7 +29,6 @@ function preload() {
 }
 
 function create() {
-    // d.game.stage.backgroundColor = '#545659';
     d.colors = Phaser.Color.HSVColorWheel();
 
     // For ploting
@@ -29,29 +38,11 @@ function create() {
 
     d.rect = new Phaser.Rectangle(0, 0, d.game.width, d.game.height);
 
-    d.plot_points = [
-        new Phaser.Point(d.game.world.centerX, d.game.world.centerY),
-        new Phaser.Point(d.game.world.centerX, d.game.world.centerY),
-        new Phaser.Point(d.game.world.centerX, d.game.world.centerY),
-        new Phaser.Point(d.game.world.centerX, d.game.world.centerY),
-        new Phaser.Point(d.game.world.centerX, d.game.world.centerY),
-        new Phaser.Point(d.game.world.centerX, d.game.world.centerY),
-        new Phaser.Point(d.game.world.centerX, d.game.world.centerY)
-    ];
-
-    d.plot_points[0].custom_color = 50;
-    d.plot_points[1].custom_color = 100;
-    d.plot_points[2].custom_color = 150;
-    d.plot_points[3].custom_color = 200;
-    d.plot_points[4].custom_color = 250;
-    d.plot_points[5].custom_color = 300;
-    d.plot_points[6].custom_color = 350;
-
     d.grid = new Array(d.game.width+1);
     for (var i=0; i<d.game.width+1; i++) {
         d.grid[i] = new Array(d.game.height+1);
         for (var j=0; j<d.game.height+1; j++) {
-            d.grid[i][j] = 200;
+            d.grid[i][j] = d.ABSENT;
         }
     }
 
@@ -62,15 +53,86 @@ function create() {
     document.getElementById('save').onclick = function() {
         location.href=get_image();
     };
+
+    d.current_node = new_node(d.ROOT, 1, 1);
+};
+
+function get_free_surroundings(point) {
+    var x = point.x;
+    var y = point.y;
+
+    var array = [];
+
+    if (x + 2 < d.game.width && d.grid[x + 2][y] == d.ABSENT) {
+        array.push(d.RIGHT);
+    }
+
+    if (x - 2 > 0 && d.grid[x - 2][y] == d.ABSENT) {
+        array.push(d.LEFT);
+    }
+
+    if (y - 2 > 0 && d.grid[x][y - 2] == d.ABSENT) {
+        array.push(d.UP);
+    }
+
+    if (y + 2 < d.game.height && d.grid[x][y + 2] == d.ABSENT) {
+        array.push(d.DOWN);
+    }
+
+    return array;
+};
+
+function new_node(parent, x, y)
+{
+    d.grid[x][y] = d.PRESENT;
+
+    return {parent: parent, x: x, y: y};
 };
 
 function rand_btw(a, b) {
     return Math.floor((Math.random() * (b-a)) + a);
-}
+};
+
+function pick_one(array) {
+    return array[Math.floor(Math.random() * array.length)];
+};
+
+function new_step() {
+    var current_node = d.current_node;
+    var x = current_node.x;
+    var y = current_node.y;
+
+    if (current_node == d.ROOT) { return; }
+
+    var surroundings = get_free_surroundings(current_node);
+
+    // No space, going to parent node
+    if (surroundings.length == 0) {
+        d.current_node = d.current_node.parent;
+        return;
+    }
+
+    // Pick one at random
+    var direction = pick_one(surroundings);
+
+    if (direction == d.UP) {
+        d.grid[x][y - 1] = d.PRESENT;
+        d.current_node = new_node(current_node, x, y - 2);
+    } else if (direction == d.RIGHT) {
+        d.grid[x + 1][y] = d.PRESENT;
+        d.current_node = new_node(current_node, x + 2, y);
+    } else if (direction == d.DOWN) {
+        d.grid[x][y + 1] = d.PRESENT;
+        d.current_node = new_node(current_node, x, y + 2);
+    } else {
+        d.grid[x - 1][y] = d.PRESENT;
+        d.current_node = new_node(current_node, x - 2, y);
+    }
+};
 
 function update() {
-    for (var i=0; i<100000; i++) {
-        d.plot_points.forEach(p => update_position(p));
+    for (var i=0; i<1000; i++) {
+        new_step();
     }
 };
 
