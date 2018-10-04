@@ -3,11 +3,11 @@
 
 var d = {}
 d.WORLD_SIZE = 600;
-d.RESOLUTION_DIVIDER = 5;
+d.RESOLUTION_DIVIDER = 10;
 d.COLOR_WHEEL_MAX = 359;
 
-d.PRESENT = 100;
-d.ABSENT = 270;
+d.PRESENT = 1;
+d.ABSENT = 0;
 
 d.ROOT = {parent: undefined};
 
@@ -15,6 +15,10 @@ d.UP = 0;
 d.RIGHT = 1;
 d.DOWN = 2;
 d.LEFT = 3;
+
+d.color_map = {}
+d.color_map[d.ABSENT] = 270;
+d.color_map[d.PRESENT] = 200;
 
 d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.CANVAS, 'd013',
 {
@@ -55,7 +59,7 @@ function create() {
         location.href=get_image();
     };
 
-    d.current_node = new_node(d.ROOT, 1, 1);
+    d.current_node = new_node(d.ROOT, Math.floor(d.grid.length / 2) - 1, Math.floor(d.grid.length / 2) - 1);
 };
 
 function get_free_surroundings(point) {
@@ -142,7 +146,8 @@ function updateAll() {
 };
 
 function for_each_pixel(pixel, x, y) {
-    var color = d.colors[d.grid[Math.floor(x / d.RESOLUTION_DIVIDER)][Math.floor(y / d.RESOLUTION_DIVIDER)]];
+    var presence = d.grid[Math.floor(x / d.RESOLUTION_DIVIDER)][Math.floor(y / d.RESOLUTION_DIVIDER)];
+    var color = d.colors[d.color_map[presence]];
 
     pixel.r = color.r;
     pixel.g = color.g;
