@@ -3,7 +3,7 @@
 
 var d = {}
 d.WORLD_SIZE = 600;
-d.RESOLUTION_DIVIDER = 5;
+d.RESOLUTION_DIVIDER = 2;
 d.COLOR_WHEEL_MAX = 359;
 
 d.PRESENT = 1;
@@ -243,7 +243,7 @@ function solve_next_step() {
 };
 
 function update() {
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 100; i++) {
         solve_next_step();
     }
 };
