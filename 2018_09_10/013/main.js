@@ -3,6 +3,7 @@
 
 var d = {}
 d.WORLD_SIZE = 600;
+d.RESOLUTION_DIVIDER = 5;
 d.COLOR_WHEEL_MAX = 359;
 
 d.PRESENT = 100;
@@ -38,10 +39,10 @@ function create() {
 
     d.rect = new Phaser.Rectangle(0, 0, d.game.width, d.game.height);
 
-    d.grid = new Array(d.game.width+1);
-    for (var i=0; i<d.game.width+1; i++) {
-        d.grid[i] = new Array(d.game.height+1);
-        for (var j=0; j<d.game.height+1; j++) {
+    d.grid = new Array(d.game.width / d.RESOLUTION_DIVIDER + 1);
+    for (var i=0; i<d.game.width / d.RESOLUTION_DIVIDER + 1; i++) {
+        d.grid[i] = new Array(d.game.height / d.RESOLUTION_DIVIDER + 1);
+        for (var j=0; j<d.game.height / d.RESOLUTION_DIVIDER + 1; j++) {
             d.grid[i][j] = d.ABSENT;
         }
     }
@@ -63,7 +64,7 @@ function get_free_surroundings(point) {
 
     var array = [];
 
-    if (x + 2 < d.game.width && d.grid[x + 2][y] == d.ABSENT) {
+    if (x + 2 < d.game.width / d.RESOLUTION_DIVIDER && d.grid[x + 2][y] == d.ABSENT) {
         array.push(d.RIGHT);
     }
 
@@ -75,7 +76,7 @@ function get_free_surroundings(point) {
         array.push(d.UP);
     }
 
-    if (y + 2 < d.game.height && d.grid[x][y + 2] == d.ABSENT) {
+    if (y + 2 < d.game.height / d.RESOLUTION_DIVIDER && d.grid[x][y + 2] == d.ABSENT) {
         array.push(d.DOWN);
     }
 
@@ -131,17 +132,17 @@ function new_step() {
 };
 
 function update() {
-    for (var i=0; i<1000; i++) {
+    for (var i=0; i<10; i++) {
         new_step();
     }
 };
 
 function updateAll() {
-    d.bmd.processPixelRGB(forEachPixel, this, 0, 0, d.game.width, d.game.height);
+    d.bmd.processPixelRGB(for_each_pixel, this, 0, 0, d.game.width, d.game.height);
 };
 
-function forEachPixel(pixel, x, y) {
-    var color = d.colors[d.grid[x][y]];
+function for_each_pixel(pixel, x, y) {
+    var color = d.colors[d.grid[Math.floor(x / d.RESOLUTION_DIVIDER)][Math.floor(y / d.RESOLUTION_DIVIDER)]];
 
     pixel.r = color.r;
     pixel.g = color.g;
@@ -150,41 +151,8 @@ function forEachPixel(pixel, x, y) {
     return pixel;
 };
 
-function update_position(p) {
-    var sign=1;
-    if (rand_btw(0, 2) == 0) {
-        sign = -1;
-    }
-
-    if (rand_btw(0, 2) == 0) {
-        p.x += sign;
-    } else {
-        p.y += sign;
-    }
-
-    check_point_in_box(p);
-
-    // var c_idx = Math.min(p.custom_color + rand_btw(-50, 50), d.COLOR_WHEEL_MAX);
-    d.grid[p.x][p.y] = p.custom_color;
-    // d.bmd.setPixel(p.x, p.y, d.colors[c_idx].r, d.colors[c_idx].g, d.colors[c_idx].b);
-}
-
-function check_point_in_box(p) {
-    if (p.x > d.game.width) {
-        p.x = d.game.width;
-    } else if (p.x < 0) {
-        p.x = 0;
-    }
-
-    if (p.y > d.game.height) {
-        p.y = d.game.height;
-    } else if (p.y < 0) {
-        p.y = 0;
-    }
-}
-
 function get_image() {
     return d.game.canvas.toDataURL();
-}
+};
 
 function render() {};
