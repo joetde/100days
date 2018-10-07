@@ -4,7 +4,7 @@
 var d = {}
 d.WORLD_SIZE = 600;
 d.COLOR_WHEEL_MAX = 359;
-d.NB_IMAGES = 50;
+d.NB_IMAGES = 10;
 d.counter = 0;
 
 d.game = new Phaser.Game(d.WORLD_SIZE, d.WORLD_SIZE, Phaser.CANVAS, 'd010',
