@@ -54,10 +54,10 @@ function new_fry(x, y, behavior) {
             this.direction.action = 'move';
         }
 
-        if (this.x < 0) { this.x = 0; }
-        if (this.x > d.game.width - this.width) { this.x = d.game.width - this.width; }
-        if (this.y < 0) { this.y = 0; }
-        if (this.y > d.game.height - this.height) { this.y = d.game.height - this.height; }
+        if (this.x <= 0) { this.x = d.MOVE_SPEED; }
+        if (this.x >= d.game.width - this.width) { this.x = d.game.width - this.width - d.MOVE_SPEED; }
+        if (this.y <= 0) { this.y = d.MOVE_SPEED; }
+        if (this.y >= d.game.height - this.height) { this.y = d.game.height - this.height - d.MOVE_SPEED; }
 
         this.animations.play(this.get_animation_name(), 10, true);
     };
@@ -86,13 +86,13 @@ function keyboard_behavior(object) {
 
 function rotate_clockwise_behavior(object) {
     var dir = nothing_behavior(object);
-    var x = object.x;
-    var y = object.y;
+    var x = Math.floor(object.x + (object.width / 2));
+    var y = Math.floor(object.y + (object.height / 2));
     var h = d.game.height;
     var w = d.game.width;
 
-    var in_top_left_triangle = (x + y) < (Math.sqrt(Math.pow(w, 2) + Math.pow(h, 2)) / 2);
-    var in_top_right_triangle = x > y;
+    var in_top_left_triangle = (x + y) < ((h + w) / 2);
+    var in_top_right_triangle = x >= y;
 
     if (in_top_left_triangle && in_top_right_triangle) {
         dir.is_right = true;
@@ -105,7 +105,7 @@ function rotate_clockwise_behavior(object) {
     }
 
     return dir;
-}
+};
 
 function rand_btw(a, b) {
     return Math.floor((Math.random() * (b-a)) + a);
@@ -116,7 +116,7 @@ function create() {
 
     d.fries = [new_fry(100, 100, keyboard_behavior)];
     for (var i = 0; i < 50; i++) {
-        d.fries.push(new_fry(rand_btw(0, d.game.width), rand_btw(0, d.game.height), rotate_clockwise_behavior));
+        d.fries.push(new_fry(rand_btw(d.MOVE_SPEED, d.game.width - 60 - d.MOVE_SPEED), rand_btw(d.MOVE_SPEED, d.game.height - 60 - d.MOVE_SPEED), rotate_clockwise_behavior));
     }
 
     d.up_key = d.game.input.keyboard.addKey(Phaser.Keyboard.UP);
