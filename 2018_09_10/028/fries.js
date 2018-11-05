@@ -4,6 +4,8 @@
  */
 function new_fry(x, y, behavior, is_the_one) {
     var fry = d.fries_group.create(x, y, 'fry');
+    fry.visible = true;
+
     fry.animations.add('down_left_move', [0, 1, 2, 3]);
     fry.animations.add('down_right_move', [4, 5, 6, 7]);
     fry.animations.add('up_left_move', [12, 13, 14, 15]);
