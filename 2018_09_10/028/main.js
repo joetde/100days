@@ -1,5 +1,6 @@
 
 var d = {}
+d.menus = Menus;
 d.MOVE_SPEED = 1;
 
 d.game = new Phaser.Game(600, 600, Phaser.CANVAS, 'd026',
@@ -24,19 +25,13 @@ function rand_btw(a, b) {
 };
 
 function click_win() {
-    d.text_background.tint = 0x00ff00;
-    d.text_background.text = "You found it!";
 };
 
 function click_lose() {
-    d.text_background.tint = 0xff0000;
-    d.text_background.text = "Nupe!";
 };
 
 function create() {
     d.game.stage.backgroundColor = '#545659';
-    d.text_background = d.game.add.bitmapText(10, d.game.height / 2, 'carrier_command','ODD FRY ACRADE!', 34);
-    d.text_background.tint = 0x223344;
     d.fries_group = d.game.add.group();
 
     d.fries = [new_fry(100, 100, rotate_anticlockwise_behavior, true)];
@@ -47,7 +42,14 @@ function create() {
             rotate_clockwise_behavior));
     }
 
+    // Few updates to shuffle a bit those fries
+    for (var i = 0; i < 100; i++) {
+        d.fries.forEach(f => f.update());
+    }
+
     d.text_score = d.game.add.bitmapText(10, 10, 'carrier_command','0', 10);
+
+    d.menus.create(); // Last, just to be on top...
 };
 
 function update() {
