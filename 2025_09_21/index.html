@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser Grid Pattern Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        #game-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+
+    <script>
+        let game;
+        let scene;
+        
+        // Grid configuration - fill the whole page
+        const CELL_SIZE = 20; // Bigger cells for better pattern visibility
+        const CANVAS_WIDTH = window.innerWidth;
+        const CANVAS_HEIGHT = window.innerHeight;
+        const GRID_COLS = Math.floor(CANVAS_WIDTH / CELL_SIZE);
+        const GRID_ROWS = Math.floor(CANVAS_HEIGHT / CELL_SIZE);
+        
+        // Pattern types
+        const PATTERNS = {
+            BLACK_SQUARE: 0,
+            DIAGONAL_LINES: 1,
+            CENTER_DOT: 2
+        };
+
+        class GridScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'GridScene' });
+                this.graphics = null;
+            }
+
+            preload() {
+                // No assets to preload for this example
+            }
+
+            create() {
+                this.graphics = this.add.graphics();
+                this.generateGrid();
+            }
+
+            generateGrid() {
+                this.graphics.clear();
+                
+                for (let x = 0; x < GRID_COLS; x++) {
+                    for (let y = 0; y < GRID_ROWS; y++) {
+                        const pattern = this.getRandomPattern();
+                        this.drawCell(x, y, pattern);
+                    }
+                }
+            }
+
+            getRandomPattern() {
+                // Weighted pattern selection - make black squares and dots much less likely
+                const random = Math.random();
+                
+                if (random < 0.05) {
+                    return PATTERNS.BLACK_SQUARE; // 5% chance
+                } else if (random < 0.10) {
+                    return PATTERNS.CENTER_DOT; // 5% chance
+                } else {
+                    return PATTERNS.DIAGONAL_LINES; // 90% chance
+                }
+            }
+
+            drawCell(gridX, gridY, pattern) {
+                const x = gridX * CELL_SIZE;
+                const y = gridY * CELL_SIZE;
+                
+                // Draw cell border (optional, comment out for no borders)
+                this.graphics.lineStyle(1, 0xcccccc, 0.3);
+                this.graphics.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+                
+                // Draw pattern based on type
+                switch (pattern) {
+                    case PATTERNS.BLACK_SQUARE:
+                        this.drawBlackSquare(x, y);
+                        break;
+                    case PATTERNS.DIAGONAL_LINES:
+                        this.drawDiagonalLines(x, y);
+                        break;
+                    case PATTERNS.CENTER_DOT:
+                        this.drawCenterDot(x, y);
+                        break;
+                }
+            }
+
+            drawBlackSquare(x, y) {
+                this.graphics.fillStyle(0x000000);
+                this.graphics.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+            }
+
+            drawDiagonalLines(x, y) {
+                this.graphics.lineStyle(1, 0x000000, 1);
+                
+                const centerX = x + CELL_SIZE / 2;
+                const centerY = y + CELL_SIZE / 2;
+                
+                // Randomly choose diagonal line configuration
+                const lineType = Math.floor(Math.random() * 8);
+                
+                switch (lineType) {
+                    case 0:
+                        // Single diagonal: top-left to bottom-right
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x, y);
+                        this.graphics.lineTo(x + CELL_SIZE, y + CELL_SIZE);
+                        this.graphics.strokePath();
+                        break;
+                    
+                    case 1:
+                        // Single diagonal: top-right to bottom-left
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x + CELL_SIZE, y);
+                        this.graphics.lineTo(x, y + CELL_SIZE);
+                        this.graphics.strokePath();
+                        break;
+                    
+                    case 2:
+                        // Full X: both diagonals
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x, y);
+                        this.graphics.lineTo(x + CELL_SIZE, y + CELL_SIZE);
+                        this.graphics.strokePath();
+                        
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x + CELL_SIZE, y);
+                        this.graphics.lineTo(x, y + CELL_SIZE);
+                        this.graphics.strokePath();
+                        break;
+                    
+                    case 3:
+                        // Lines from corners to center (star pattern)
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x, y);
+                        this.graphics.lineTo(centerX, centerY);
+                        this.graphics.strokePath();
+                        
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x + CELL_SIZE, y);
+                        this.graphics.lineTo(centerX, centerY);
+                        this.graphics.strokePath();
+                        
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x, y + CELL_SIZE);
+                        this.graphics.lineTo(centerX, centerY);
+                        this.graphics.strokePath();
+                        
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x + CELL_SIZE, y + CELL_SIZE);
+                        this.graphics.lineTo(centerX, centerY);
+                        this.graphics.strokePath();
+                        break;
+                    
+                    case 4:
+                        // Full diagonal + half diagonal: top-left to bottom-right full + top-right to center
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x, y);
+                        this.graphics.lineTo(x + CELL_SIZE, y + CELL_SIZE);
+                        this.graphics.strokePath();
+                        
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x + CELL_SIZE, y);
+                        this.graphics.lineTo(centerX, centerY);
+                        this.graphics.strokePath();
+                        break;
+                    
+                    case 5:
+                        // Full diagonal + half diagonal: top-right to bottom-left full + top-left to center
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x + CELL_SIZE, y);
+                        this.graphics.lineTo(x, y + CELL_SIZE);
+                        this.graphics.strokePath();
+                        
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x, y);
+                        this.graphics.lineTo(centerX, centerY);
+                        this.graphics.strokePath();
+                        break;
+                    
+                    case 6:
+                        // Full diagonal + half diagonal: top-left to bottom-right full + bottom-left to center
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x, y);
+                        this.graphics.lineTo(x + CELL_SIZE, y + CELL_SIZE);
+                        this.graphics.strokePath();
+                        
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x, y + CELL_SIZE);
+                        this.graphics.lineTo(centerX, centerY);
+                        this.graphics.strokePath();
+                        break;
+                    
+                    case 7:
+                        // Full diagonal + half diagonal: top-right to bottom-left full + bottom-right to center
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x + CELL_SIZE, y);
+                        this.graphics.lineTo(x, y + CELL_SIZE);
+                        this.graphics.strokePath();
+                        
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(x + CELL_SIZE, y + CELL_SIZE);
+                        this.graphics.lineTo(centerX, centerY);
+                        this.graphics.strokePath();
+                        break;
+                }
+                
+                // Randomly fill triangles formed by diagonal lines
+                this.fillTriangles(x, y, lineType);
+            }
+
+            fillTriangles(x, y, lineType) {
+                const centerX = x + CELL_SIZE / 2;
+                const centerY = y + CELL_SIZE / 2;
+                let triangles = [];
+                
+                switch (lineType) {
+                    case 0:
+                        // Single diagonal: top-left to bottom-right creates 2 triangles
+                        triangles = [
+                            [[x, y], [x + CELL_SIZE, y], [x + CELL_SIZE, y + CELL_SIZE]], // Top triangle
+                            [[x, y], [x, y + CELL_SIZE], [x + CELL_SIZE, y + CELL_SIZE]]  // Bottom triangle
+                        ];
+                        break;
+                    
+                    case 1:
+                        // Single diagonal: top-right to bottom-left creates 2 triangles
+                        triangles = [
+                            [[x, y], [x + CELL_SIZE, y], [x, y + CELL_SIZE]], // Left triangle
+                            [[x + CELL_SIZE, y], [x + CELL_SIZE, y + CELL_SIZE], [x, y + CELL_SIZE]] // Right triangle
+                        ];
+                        break;
+                    
+                    case 2:
+                        // Full X: both diagonals create 4 triangles
+                        triangles = [
+                            [[x, y], [x + CELL_SIZE, y], [centerX, centerY]], // Top triangle
+                            [[x + CELL_SIZE, y], [x + CELL_SIZE, y + CELL_SIZE], [centerX, centerY]], // Right triangle
+                            [[x + CELL_SIZE, y + CELL_SIZE], [x, y + CELL_SIZE], [centerX, centerY]], // Bottom triangle
+                            [[x, y + CELL_SIZE], [x, y], [centerX, centerY]] // Left triangle
+                        ];
+                        break;
+                    
+                    case 3:
+                        // Star pattern: lines from corners to center create 4 triangles
+                        triangles = [
+                            [[x, y], [x + CELL_SIZE, y], [centerX, centerY]], // Top triangle
+                            [[x + CELL_SIZE, y], [x + CELL_SIZE, y + CELL_SIZE], [centerX, centerY]], // Right triangle
+                            [[x + CELL_SIZE, y + CELL_SIZE], [x, y + CELL_SIZE], [centerX, centerY]], // Bottom triangle
+                            [[x, y + CELL_SIZE], [x, y], [centerX, centerY]] // Left triangle
+                        ];
+                        break;
+                    
+                    case 4:
+                        // Full diagonal + half diagonal: top-left to bottom-right full + top-right to center
+                        triangles = [
+                            [[x, y], [x + CELL_SIZE, y], [x + CELL_SIZE, y + CELL_SIZE]], // Top-right triangle (above full diagonal)
+                            [[x, y], [x, y + CELL_SIZE], [x + CELL_SIZE, y + CELL_SIZE]], // Bottom-left triangle (below full diagonal)
+                            [[x + CELL_SIZE, y], [centerX, centerY], [x + CELL_SIZE, y + CELL_SIZE]] // Right triangle (from half diagonal)
+                        ];
+                        break;
+                    
+                    case 5:
+                        // Full diagonal + half diagonal: top-right to bottom-left full + top-left to center
+                        triangles = [
+                            [[x, y], [x + CELL_SIZE, y], [x, y + CELL_SIZE]], // Top-left triangle (above full diagonal)
+                            [[x + CELL_SIZE, y], [x + CELL_SIZE, y + CELL_SIZE], [x, y + CELL_SIZE]], // Bottom-right triangle (below full diagonal)
+                            [[x, y], [centerX, centerY], [x, y + CELL_SIZE]] // Left triangle (from half diagonal)
+                        ];
+                        break;
+                    
+                    case 6:
+                        // Full diagonal + half diagonal: top-left to bottom-right full + bottom-left to center
+                        triangles = [
+                            [[x, y], [x + CELL_SIZE, y], [x + CELL_SIZE, y + CELL_SIZE]], // Top-right triangle (above full diagonal)
+                            [[x, y], [x, y + CELL_SIZE], [x + CELL_SIZE, y + CELL_SIZE]], // Bottom-left triangle (below full diagonal)
+                            [[x, y + CELL_SIZE], [centerX, centerY], [x, y]] // Left triangle (from half diagonal)
+                        ];
+                        break;
+                    
+                    case 7:
+                        // Full diagonal + half diagonal: top-right to bottom-left full + bottom-right to center
+                        triangles = [
+                            [[x, y], [x + CELL_SIZE, y], [x, y + CELL_SIZE]], // Top-left triangle (above full diagonal)
+                            [[x + CELL_SIZE, y], [x + CELL_SIZE, y + CELL_SIZE], [x, y + CELL_SIZE]], // Bottom-right triangle (below full diagonal)
+                            [[x + CELL_SIZE, y + CELL_SIZE], [centerX, centerY], [x + CELL_SIZE, y]] // Right triangle (from half diagonal)
+                        ];
+                        break;
+                }
+                
+                triangles.forEach(triangle => {
+                    if (Math.random() < 0.3) { // 30% chance to fill each triangle
+                        this.graphics.fillStyle(0x000000);
+                        this.graphics.beginPath();
+                        this.graphics.moveTo(triangle[0][0], triangle[0][1]);
+                        this.graphics.lineTo(triangle[1][0], triangle[1][1]);
+                        this.graphics.lineTo(triangle[2][0], triangle[2][1]);
+                        this.graphics.closePath();
+                        this.graphics.fillPath();
+                    }
+                });
+            }
+
+            drawCenterDot(x, y) {
+                const centerX = x + CELL_SIZE / 2;
+                const centerY = y + CELL_SIZE / 2;
+                const radius = Math.max(1, CELL_SIZE / 10); // Made smaller: was /6, now /10
+                
+                this.graphics.fillStyle(0x000000);
+                this.graphics.fillCircle(centerX, centerY, radius);
+            }
+        }
+
+        // Phaser game configuration
+        const config = {
+            type: Phaser.AUTO,
+            width: CANVAS_WIDTH,
+            height: CANVAS_HEIGHT,
+            parent: 'game-container',
+            backgroundColor: '#ffffff',
+            scene: GridScene,
+            scale: {
+                mode: Phaser.Scale.NONE
+            }
+        };
+
+        // Initialize the game
+        function initGame() {
+            game = new Phaser.Game(config);
+        }
+
+        // Function to regenerate the grid
+        function regenerateGrid() {
+            if (game && game.scene.scenes[0]) {
+                game.scene.scenes[0].generateGrid();
+            }
+        }
+
+        // Start the game when the page loads
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
